@@ -230,11 +230,12 @@ elicb["No.of Phases"]=F["no_phases"]
 elicb["Trip Curve"]=F["b_curve_type"]
 elicb["V_LN (V)"]=F["elicb_mvln"]
 elicb["V_NE (V)"]=F["elicb_mvne"]
+elicb["V_LE (V)"]=F["elicb_mvle"]
 elicb["L1-ELI (O)"]=F["elicb_mel1"]
 elicb["L2-ELI (O)"]=F["elicb_mel2"]
 elicb["L3-ELI (O)"]=F["elicb_mel3"]
 elicb["Psc (kA)"]=F["elicb_psc"]
-elicb["Suggested Max ELI (O)"]=F["	elicb_max_eli"]
+elicb["Suggested Max ELI (O)"]=F["elicb_max_eli"]
 elicb_filled = elicb.fillna("")
 elicb["Device Rating (A)"] = elicb["Device Rating (A)"].astype(int)
 new_column1 = []
@@ -243,39 +244,35 @@ P = 0
 K = 0
 TMS = 1
 TDS = 1
+elicb_filled = elicb.fillna("")
+elicb["Device Rating (A)"] =elicb["Device Rating (A)"].astype(int)
+Is = elicb["Device Rating (A)"]
 
 gf1 = elicb[
     [
-        "Location",
-        "Parent Location",
-        "Facility Area",
         "Earthing Configuration",
         "Type of Circuit Location",
         "Device Rating (A)",
-        "Device Make",
-        "Device Type",
-        "Device Sensitivity (mA)",
-        "No. of Phases",
+        "device_make",
+        "device_type",
+        "device_sensitivity",
+        "No.of Phases",
         "Trip Curve",
     ]
 ]
 
 gf2 = elicb[
     [
-        "Device Rating (A)",
-        "Device Type",
-        "No. of Phases",
-        "V_LN",
-        "V_LE",
-        "V_NE",
-        "L1-ELI",
-        "L2-ELI",
-        "L3-ELI",
+
+        "V_LN (V)",
+        "V_NE (V)",
+        "V_LE (V)",
+        "L1-ELI (O)",
+        "L2-ELI (O)",
+        "L1-ELI (O)",
         "Psc (kA)",
     ]
 ]
-
-
 
 
 
