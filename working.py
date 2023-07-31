@@ -321,13 +321,6 @@ gf2 = elicb[
     ]
 ]
 
-
-<<<<<<< HEAD
-=======
-
-
-
->>>>>>> 9fa3862982ebf8083d7587fade54bd9ac19b3602
 # --------------------------------------------location coloumn------------------
 def find_loc_name(loc_id, locations):
     while loc_id in locations:
@@ -1138,39 +1131,6 @@ def earthpit_table(df, doc):  # creates the earthpit table with  result coloumn
 
     return doc
 
-
-<<<<<<< HEAD
-# ----------------------------------------------------Insulation resistance-----------------------
-=======
-# -------------------------coloumn-----------------------
-
-irdf_column_widths = [
-    0.52,
-    0.43,
-    0.6,
-    0.37,
-    0.59,
-    0.59,
-    0.69,
-    0.49,
-    0.59,
-    0.59,
-    0.47,
-    0.51,
-    0.59,
-    0.59,
-    0.6,
-]
-
-
-
-# ---------------------------------------combined graphs and piechart-----------------------
-
-
-
-
-
->>>>>>> c2d63a100a85db2781c470605211401fcdac716c
 def insulation_combined_graph(mf):
     plt.figure(figsize=(16, 8))
 
@@ -1218,12 +1178,6 @@ def insulation_combined_graph(mf):
     return graph_combined
 
 
-<<<<<<< HEAD
-# ------------------------------------Floor wall resistance------------------------------
-
-
-=======
->>>>>>> c2d63a100a85db2781c470605211401fcdac716c
 def flooresistance_combined_graph(df):
     plt.figure(figsize=(16, 8))
 
@@ -1268,13 +1222,6 @@ def flooresistance_combined_graph(df):
 
     return graph_combined1
 
-<<<<<<< HEAD
-
-# -----------------------------------------------------Resistance conductor----------------------------
-
-
-=======
->>>>>>> c2d63a100a85db2781c470605211401fcdac716c
 def resc_combined_graph(jf):
     plt.figure(figsize=(16, 8))
 
@@ -1401,13 +1348,6 @@ def voltage_combined_graph(vf):
 
     return graph_combined
 
-
-<<<<<<< HEAD
-# -----------------------------------------------------Polarity----------------------------
-
-
-=======
->>>>>>> c2d63a100a85db2781c470605211401fcdac716c
 def polarity_combined_graph(af):
     plt.figure(figsize=(16, 8))
 
@@ -1450,8 +1390,6 @@ def polarity_combined_graph(af):
     plt.close()
 
     return graph_combined4
-
-<<<<<<< HEAD
 
 # -----------------------------------------------------Residual current device----------------------------
 
@@ -1522,8 +1460,6 @@ rdcdf = rdcdf.dropna()
 print(rdcdf)
 
 
-=======
->>>>>>> c2d63a100a85db2781c470605211401fcdac716c
 def residual_combined_graph(rf):
     plt.figure(figsize=(16, 8))
 
@@ -1566,7 +1502,6 @@ def residual_combined_graph(rf):
     return graph_combined
 
 
-<<<<<<< HEAD
 # -----------------------------------------------------Earth pit----------------------------
 
 
@@ -1626,8 +1561,6 @@ epedf = epedf.dropna()
 print(epedf)
 
 
-=======
->>>>>>> c2d63a100a85db2781c470605211401fcdac716c
 def Earth_combined_graph(ef):
     plt.figure(figsize=(16, 8))
 
@@ -1814,9 +1747,6 @@ def pat_combined_graph(bf):
 
 
 # -----------------------------------------------------Three phase symmetry----------------------------
-<<<<<<< HEAD
-
-
 def threephase_result(tpsdf, tf2):
     tpsdf["Rated Line Voltage (V)"] = tf2["Rated Line Voltage (V)"]
     tpsdf["Average Line Voltage (V)"] = round(
@@ -1883,8 +1813,6 @@ print(tpsdf)
 import io
 import matplotlib.pyplot as plt
 
-=======
->>>>>>> c2d63a100a85db2781c470605211401fcdac716c
 # def threephase_combined_graph(tpsdf):
 #     # Create a 2x2 grid of subplots
 #     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(16, 8))
@@ -1974,9 +1902,6 @@ import matplotlib.pyplot as plt
 
 
 # -----------------------------------------------------Function and operations----------------------------
-
-<<<<<<< HEAD
-
 def func_ops_result(func_check, inter_check):
     if func_check == "OK" and inter_check == "OK":
         return "Pass"
@@ -1988,9 +1913,6 @@ def func_ops_result(func_check, inter_check):
         return "Fail"
     else:
         return "Invalid"
-=======
->>>>>>> c2d63a100a85db2781c470605211401fcdac716c
-
 
 
 
