@@ -98,6 +98,8 @@ rcdf["Specific Conductor Resistance (MΩ/m) at 30°C"] = rcdf[
 rcdf.to_csv("resistance_updated.csv", index=False)
 
 
+
+
 #--------phase sequence-----------
 
 phs = pd.DataFrame()  # OP
