@@ -1,0 +1,4 @@
+Conductor Location - From,Conductor Location - To,No of runs of Conductor,Conductor Type,Conductor Size (sq. mm),Conductor Length (m),Conductor Temperature (°C),Is Continuity found?,Lead Internal Resistance (Ω),Continuity Resistance (Ω),Corrected Continuity Resistance (Ω),Specific Conductor Resistance (MO/m) at 30°C,Specific Conductor Resistance (MΩ/m) at 30°C
+,,1,Copper,6,10.0,,,,,,,NAN
+,,2,Aluminium,4,,,,,,,,NAN
+Main ACB,MLTP-1,2,Copper,16,10.0,32.0,Yes,0.1,1.1,1.0,9.91e-08,NAN
