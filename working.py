@@ -147,7 +147,14 @@ rcdf["Specific Conductor Resistance (MΩ/m) at 30°C"] = a.apply(lambda x: forma
 rcdf.to_csv("resistance_updated.csv", index=False)
 rcdf.drop(rcdf.columns[-1], axis=1, inplace=True)
 
+<<<<<<< HEAD
+
+
+
+#--------phase sequence-----------
+=======
 # --------phase sequence-----------
+>>>>>>> b55e3e2b4cd17b33f9477b63ea4b2150955a31d6
 
 phs = pd.DataFrame()  # OP
 phs["VL1-L2 (V)"] = F["op_l1_l2_v"]
