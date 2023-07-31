@@ -20,8 +20,8 @@ from datetime import datetime
 F = pd.read_csv("main.csv")
 
 
-# --------------------------------------------df------------------
-# -#  ------Insulationresistance-------
+# --------------------------------------------dataframes------------------
+#      ------Insulationresistance-------
 
 irdf = pd.DataFrame()  # IR
 irdf["No. Poles"] = F["no_poles"]
@@ -36,6 +36,25 @@ irdf["Insulation Type"] = F["ins_type"]
 irdf["Leakage Capacitance (nF)"] = F["leak_cap_nf"]
 irdf["Insulation Resistance (MO)"] = F["ins_res_mohm"]
 
+irdf_column_widths = [
+    0.52,
+    0.43,
+    0.6,
+    0.37,
+    0.59,
+    0.59,
+    0.69,
+    0.49,
+    0.59,
+    0.59,
+    0.47,
+    0.51,
+    0.59,
+    0.59,
+    0.6,
+]
+
+
 #  -----Floor wall resistance------
 
 fwrdf = pd.DataFrame()  # FWR
@@ -44,7 +63,19 @@ fwrdf["Nominal Voltage to Earth of System (V)"] = F["nom_vlt_e_v"]
 fwrdf["Applied Test Voltage (V)"] = F["app_test_vlt"]
 fwrdf["Measured Output Current (mA)"] = F["meas_out_curr_ma"]
 fwrdf["Resistance (kO)"] = F["res_kohm"]
-# fwrdf_column_widths = [1.44, 1.5, 1.75, 2.75, 3, 2.25, 2.25, 2.5, 2, 1.5,]
+fwrdf_column_widths = [
+    0.6,
+    0.7,
+    0.7,
+    1.3,
+    1,
+    0.7,
+    0.8,
+    0.8,
+    0.7,
+    0.6,
+    0.9,
+]
 
 fwrdf["Effective Resistance"] = (
     fwrdf["Applied Test Voltage (V)"] / fwrdf["Measured Output Current (mA)"]
@@ -67,6 +98,26 @@ rcdf["Continuity Resistance (Ω)"] = F["con_res"]
 rcdf["Corrected Continuity Resistance (Ω)"] = F["corr_cont_res"]
 rcdf["Specific Conductor Resistance (MO/m) at 30°C"] = F["spec_cond_res"]
 
+rcdf_column_widths = [
+    0.52,
+    0.52,
+    0.52,
+    0.52,
+    0.52,
+    0.52,
+    0.52,
+    0.52,
+    0.52,
+    0.52,
+    0.52,
+    0.52,
+    0.52,
+    0.52,
+    0.52,
+    0.52,
+    ]
+
+
 def alpha(cond_temp):  # Function to calculate alpha value based on conductor typ
     if cond_temp == "Al":
         return 0.0038
@@ -87,20 +138,23 @@ rcdf["Corrected Continuity Resistance (Ω)"] = (
 
 # Calculate Specific Conductor Resistance at 30°C
 alpha_values = rcdf["Conductor Type"].apply(alpha)
-rcdf["Specific Conductor Resistance (MΩ/m) at 30°C"] = rcdf["Corrected Continuity Resistance (Ω)"] / (1 + alpha_values * (rcdf["Conductor Temperature (°C)"] - 30))
-
-rcdf["Specific Conductor Resistance (MΩ/m) at 30°C"] /= 1000000
-
-rcdf["Specific Conductor Resistance (MΩ/m) at 30°C"] = rcdf[
-    "Specific Conductor Resistance (MΩ/m) at 30°C"
-].apply(lambda x: format(x, "E"))
+a = rcdf["Corrected Continuity Resistance (Ω)"] / (
+    1 + alpha_values * (rcdf["Conductor Temperature (°C)"] - 30)
+)
+a /= 1000000
+rcdf["Specific Conductor Resistance (MΩ/m) at 30°C"] = a.apply(lambda x: format(x, "E"))
 
 rcdf.to_csv("resistance_updated.csv", index=False)
+rcdf.drop(rcdf.columns[-1], axis=1, inplace=True)
 
+<<<<<<< HEAD
 
 
 
 #--------phase sequence-----------
+=======
+# --------phase sequence-----------
+>>>>>>> b55e3e2b4cd17b33f9477b63ea4b2150955a31d6
 
 phs = pd.DataFrame()  # OP
 phs["VL1-L2 (V)"] = F["op_l1_l2_v"]
@@ -112,7 +166,7 @@ phs["VL3-N (V)"] = F["op_l3_n_v"]
 phs["Phase Sequence"] = F["phase_seq"]
 
 
-#-------------voltagedrop-----------
+# -------------voltagedrop-----------
 
 
 vddf = pd.DataFrame()  # vlt_drop_v
@@ -141,7 +195,7 @@ lim2 = 5
 lim3 = 6
 lim4 = 8
 
-#-------------polarity---------------
+# -------------polarity---------------
 
 ptdf = pd.DataFrame()  # PT
 ptdf["Device Type"] = F["pt_device_type"]
@@ -149,7 +203,7 @@ ptdf["Type of Supply"] = F["type_supply"]
 ptdf["Line to Neutral Voltage (V)"] = F["l_n_v"]
 ptdf["Polarity Reference"] = F["pol_ref"]
 
-#----------residual current device---------
+# ----------residual current device---------
 
 rdcdf = pd.DataFrame()  # RD
 rdcdf["type_supply of Voltage Waveform"] = F["type_supply"]
@@ -165,7 +219,7 @@ rdcdf["Trip Current (mA)"] = F["trip_curr_ma"]
 rdcdf["Trip Time (ms)"] = F["trip_time"]
 rdcdf["Device Tripped"] = F["device_trip"]
 
-#----------earthpit---------
+# ----------earthpit---------
 
 
 epedf = pd.DataFrame()  # EPE
@@ -179,8 +233,7 @@ epedf["Calculated Earth Resistance - Individual (O)"] = F["ceri"]
 epedf["Electrode Distance Ratio"] = F["elec_dis_ratio"]
 
 
-
-#--------------three phase symmetry--------------- 
+# --------------three phase symmetry---------------
 
 tpsdf = pd.DataFrame()  # TPS
 tpsdf["Rated Line Voltage (V)"] = F["rated_line_vlt"]
@@ -194,8 +247,7 @@ tpsdf["Voltage-NE (V)"] = F["vlt_nev"]
 tpsdf["Zero Sum Current (mA)"] = F["zero_sum_curr"]
 
 
-
-#--------------function and opertaion--------------- 
+# --------------function and opertaion---------------
 
 fodf = pd.DataFrame()  # FUNC OPS
 fodf["Device type"] = F["fo_device_type"]
@@ -277,9 +329,12 @@ gf2 = elicb[
 ]
 
 
+<<<<<<< HEAD
+=======
 
 
 
+>>>>>>> 9fa3862982ebf8083d7587fade54bd9ac19b3602
 # --------------------------------------------location coloumn------------------
 def find_loc_name(loc_id, locations):
     while loc_id in locations:
@@ -320,6 +375,7 @@ def create_dataframe(F):
 table_df = create_dataframe(F)
 
 # ------------------------------------result---------------------------------------
+
 
 def insualtion_result(nom_cir_vlt, test_vlt, ins_res_mohm):
     if nom_cir_vlt <= 50:
@@ -412,7 +468,6 @@ rcdf["Result"] = rcdf.apply(
 rcdf = pd.concat([table_df, rcdf], axis=1)
 rcdf = rcdf.dropna()
 print(rcdf)
-
 
 
 def phase_result(phase_seq):
@@ -532,6 +587,7 @@ ptdf["Result"] = ptdf["Line to Neutral Voltage (V)"].apply(polarity_result)
 ptdf = pd.concat([table_df, ptdf], axis=1)
 ptdf = ptdf.dropna()
 print(ptdf)
+
 
 def residual_result(type_supply, test_curr_ma, rated_res_op_curr, device_trip, trip_time):
     if type_supply == "AC":
@@ -745,7 +801,6 @@ print(patdf)
 
 
 
-
 # ------------------------------------table---------------------------------------
 def satisfactory_table(df, column_widths, doc):
     table_data = df.iloc[:, :]
@@ -927,6 +982,72 @@ def pass_table(df, doc):  # creates the insulation table with  result coloumn
     for section in doc.sections:
         section.left_margin = Inches(0.2)
 
+    font_size = 6
+    for row in table.rows:
+        for cell in row.cells:
+            for paragraph in cell.paragraphs:
+                for run in paragraph.runs:
+                    run.font.size = Pt(font_size)
+
+    return doc
+
+
+def pass1_table(df, column_widths, doc):  # creates the insulation table with  result coloumn
+    table_data = df.iloc[:, 0:]
+    num_rows, num_cols = table_data.shape
+    table = doc.add_table(rows=num_rows + 1, cols=num_cols)  # Add +1 for the "Result" column
+    table.style = "Table Grid"
+    table.autofit = False
+    # max_word_lengths = [0] * num_cols
+    # for j, col in enumerate(table_data.columns):
+    #     if not table_data[col].empty:
+    #         max_word_length = max(table_data[col].astype(str).apply(len))
+    #     else:
+    #         max_word_length = 0
+    #     max_word_lengths[j] = max_word_length
+
+    # conversion_factor = -0.2
+    # column_widths = [length * conversion_factor for length in max_word_lengths]
+
+    for j, col in enumerate(table_data.columns):
+        table.cell(0, j).text = col
+        table.cell(0, j).width = Inches(column_widths[j])
+        first_row_cells = table.rows[0].cells
+        for cell in first_row_cells:
+            cell.paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+            cell_elem = cell._element
+            tc_pr = cell_elem.get_or_add_tcPr()
+            shading_elem = parse_xml(f'<w:shd {nsdecls("w")} w:fill="d9ead3"/>')
+            tc_pr.append(shading_elem)
+
+    for i, row in enumerate(table_data.itertuples(), start=0):
+        for j, value in enumerate(row[1:], start=0):
+            table.cell(i + 1, j).text = str(value)
+            cell.paragraphs[0].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+
+    for i, row in enumerate(table_data.itertuples(), start=1):
+        for j, value in enumerate(row[1:], start=0):
+            cell = table.cell(i, j)
+            cell.text = str(value)
+            cell.paragraphs[
+                0
+            ].alignment = WD_PARAGRAPH_ALIGNMENT.CENTER  # Align cell text to the center
+            if j == num_cols - 1:  # Apply background color only to the Result column
+                result_cell = cell
+                if value in {"Pass", "PASS", "CLOCKWISE"}:
+                    shading_elm = parse_xml(
+                        r'<w:shd {} w:fill="#00FF00"/>'.format(nsdecls("w"))
+                    )  # Green color
+                    result_cell._tc.get_or_add_tcPr().append(shading_elm)
+                elif value in {"Fail", "FAIL", "ANTICLOCKWISE"}:
+                    shading_elm = parse_xml(
+                        r'<w:shd {} w:fill="#FF0000"/>'.format(nsdecls("w"))
+                    )  # Red color
+                    result_cell._tc.get_or_add_tcPr().append(shading_elm)
+
+    for section in doc.sections:
+        section.left_margin = Inches(0.2)
+
     font_size = 7
     for row in table.rows:
         for cell in row.cells:
@@ -1025,6 +1146,9 @@ def earthpit_table(df, doc):  # creates the earthpit table with  result coloumn
     return doc
 
 
+<<<<<<< HEAD
+# ----------------------------------------------------Insulation resistance-----------------------
+=======
 # -------------------------coloumn-----------------------
 
 irdf_column_widths = [
@@ -1053,6 +1177,7 @@ irdf_column_widths = [
 
 
 
+>>>>>>> c2d63a100a85db2781c470605211401fcdac716c
 def insulation_combined_graph(mf):
     plt.figure(figsize=(16, 8))
 
@@ -1100,6 +1225,12 @@ def insulation_combined_graph(mf):
     return graph_combined
 
 
+<<<<<<< HEAD
+# ------------------------------------Floor wall resistance------------------------------
+
+
+=======
+>>>>>>> c2d63a100a85db2781c470605211401fcdac716c
 def flooresistance_combined_graph(df):
     plt.figure(figsize=(16, 8))
 
@@ -1144,6 +1275,13 @@ def flooresistance_combined_graph(df):
 
     return graph_combined1
 
+<<<<<<< HEAD
+
+# -----------------------------------------------------Resistance conductor----------------------------
+
+
+=======
+>>>>>>> c2d63a100a85db2781c470605211401fcdac716c
 def resc_combined_graph(jf):
     plt.figure(figsize=(16, 8))
 
@@ -1254,8 +1392,6 @@ def voltage_combined_graph(vf):
             rotation=0,
         )
 
-    
-
     # Pie chart
     plt.subplot(122)
     vf_counts = vf["Result"].value_counts()
@@ -1273,6 +1409,12 @@ def voltage_combined_graph(vf):
     return graph_combined
 
 
+<<<<<<< HEAD
+# -----------------------------------------------------Polarity----------------------------
+
+
+=======
+>>>>>>> c2d63a100a85db2781c470605211401fcdac716c
 def polarity_combined_graph(af):
     plt.figure(figsize=(16, 8))
 
@@ -1316,6 +1458,79 @@ def polarity_combined_graph(af):
 
     return graph_combined4
 
+<<<<<<< HEAD
+
+# -----------------------------------------------------Residual current device----------------------------
+
+
+def residual_result(type_supply, test_curr_ma, rated_res_op_curr, device_trip, trip_time):
+    if type_supply == "AC":
+        if test_curr_ma == 0.5 * rated_res_op_curr:
+            if device_trip == "No":
+                return "Pass"
+            else:
+                return "Fail"
+        elif test_curr_ma == 1 * rated_res_op_curr and device_trip == "Yes":
+            if trip_time <= 300:
+                return "Pass"
+            else:
+                return "Fail"
+        elif test_curr_ma == 2 * rated_res_op_curr and device_trip == "Yes":
+            if trip_time <= 150:
+                return "Pass"
+            else:
+                return "Fail"
+        elif test_curr_ma == 5 * rated_res_op_curr and device_trip == "Yes":
+            if trip_time <= 40:
+                return "Pass"
+            else:
+                return "Fail"
+        else:
+            return "Fail"
+    elif type_supply == "A":
+        if test_curr_ma == 0.5 * rated_res_op_curr:
+            if device_trip == "No":
+                return "Pass"
+            else:
+                return "Fail"
+        elif test_curr_ma == 1 * rated_res_op_curr and device_trip == "Yes":
+            if 130 <= trip_time <= 500:
+                return "Pass"
+            else:
+                return "Fail"
+        elif test_curr_ma == 2 * rated_res_op_curr and device_trip == "Yes":
+            if 60 <= trip_time <= 200:
+                return "Pass"
+            else:
+                return "Fail"
+        elif test_curr_ma == 5 * rated_res_op_curr and device_trip == "Yes":
+            if 50 <= trip_time <= 150:
+                return "Pass"
+            else:
+                return "Fail"
+        else:
+            return "Fail"
+    else:
+        return "Pass"
+
+
+rdcdf["Result"] = rdcdf.apply(
+    lambda row: residual_result(
+        row["type_supply of Voltage Waveform"],
+        row["Test Current (mA)"],
+        row["Rated Residual Operating Current,IΔn (mA)"],
+        row["Device Tripped"],
+        row["Trip Time (ms)"],
+    ),
+    axis=1,
+)
+rdcdf = pd.concat([table_df, rdcdf], axis=1)
+rdcdf = rdcdf.dropna()
+print(rdcdf)
+
+
+=======
+>>>>>>> c2d63a100a85db2781c470605211401fcdac716c
 def residual_combined_graph(rf):
     plt.figure(figsize=(16, 8))
 
@@ -1358,6 +1573,68 @@ def residual_combined_graph(rf):
     return graph_combined
 
 
+<<<<<<< HEAD
+# -----------------------------------------------------Earth pit----------------------------
+
+
+def Earth_result(elec_dis_ratio, meri):
+    if meri <= 2 and elec_dis_ratio >= 1:
+        return "PASS - Test Electrodes are properly placed"
+    elif meri <= 2 and elec_dis_ratio < 1:
+        return "PASS - Test Electrodes are not properly placed"
+    elif meri > 2 and elec_dis_ratio >= 1:
+        return "FAIL - Test Electrodes are properly placed"
+    elif meri > 2 and elec_dis_ratio < 1:
+        return "FAIL - Test Electrodes are not properly placed"
+    else:
+        return "Invalid"
+
+
+def earthpit_result(elec_dis_ratio, meri):  # earth residual test condition
+    if meri <= 2 and elec_dis_ratio >= 1:
+        return "PASS"
+    elif meri <= 2 and elec_dis_ratio < 1:
+        return "PASS"
+    elif meri > 2 and elec_dis_ratio >= 1:
+        return "FAIL"
+    elif meri > 2 and elec_dis_ratio < 1:
+        return "FAIL"
+    else:
+        return "Invalid"
+
+
+def earth_remark_result(elec_dis_ratio, meri):  # earth residual test condition
+    if meri <= 2 and elec_dis_ratio >= 1:
+        return "Test Electrodes are properly placed"
+    elif meri <= 2 and elec_dis_ratio < 1:
+        return "Test Electrodes are not properly placed"
+    elif meri > 2 and elec_dis_ratio >= 1:
+        return "Test Electrodes are properly placed"
+    elif meri > 2 and elec_dis_ratio < 1:
+        return "Test Electrodes are not properly placed"
+    else:
+        return "Invalid"
+
+
+epedf["Result"] = epedf.apply(
+    lambda row: earthpit_result(
+        row["Electrode Distance Ratio"], row["Measured Earth Resistance - Individual (O)"]
+    ),
+    axis=1,
+)
+epedf["Remark"] = epedf.apply(
+    lambda row: earth_remark_result(
+        row["Electrode Distance Ratio"], row["Measured Earth Resistance - Individual (O)"]
+    ),
+    axis=1,
+)
+epedf = pd.concat([table_df, epedf], axis=1)
+epedf = epedf.dropna()
+print(epedf)
+
+
+=======
+>>>>>>> c2d63a100a85db2781c470605211401fcdac716c
 def Earth_combined_graph(ef):
     plt.figure(figsize=(16, 8))
 
@@ -1544,6 +1821,77 @@ def pat_combined_graph(bf):
 
 
 # -----------------------------------------------------Three phase symmetry----------------------------
+<<<<<<< HEAD
+
+
+def threephase_result(tpsdf, tf2):
+    tpsdf["Rated Line Voltage (V)"] = tf2["Rated Line Voltage (V)"]
+    tpsdf["Average Line Voltage (V)"] = round(
+        (tf2["Voltage-L1L2 (V)"] + tf2["Voltage-L2L3 (V)"] + tf2["Voltage-L3L1 (V)"]) / 3, 2
+    )
+
+    tpsdf["Average Phase Voltage (V)"] = (
+        tf2["Voltage-L1N (V)"] + tf2["Voltage-L2N (V)"] + tf2["Voltage-L3N (V)"]
+    ) / 3
+    tpsdf["Voltage Unbalance %"] = round(
+        (
+            (tf2["Voltage-L1N (V)"] - tpsdf["Average Line Voltage (V)"])
+            .abs()
+            .where(
+                (tf2["Voltage-L1N (V)"] - tpsdf["Average Line Voltage (V)"]) > 0,
+                (tpsdf["Average Line Voltage (V)"] - tf2["Voltage-L1N (V)"]).abs(),
+            )
+            .max(axis=0)
+            / tpsdf["Average Line Voltage (V)"]
+        )
+        * 100,
+        2,
+    )
+    tpsdf["Voltage Result"] = np.where(tpsdf["Voltage Unbalance %"] <= 10, "Pass", "Fail")
+    tpsdf["Rated Phase Current (A)"] = tf2["Rated Phase Current (A)"]
+    tpsdf["Average Phase Current (A)"] = round(
+        (tf2["Current-L1 (A)"] + tf2["Current-L2 (A)"] + tf2["Current-L3 (A)"]) / 3, 2
+    )
+    tpsdf["Current Unbalance %"] = round(
+        (
+            (tf2["Current-L1 (A)"] - tpsdf["Average Phase Current (A)"])
+            .abs()
+            .where(
+                (tf2["Current-L1 (A)"] - tpsdf["Average Phase Current (A)"]) > 0,
+                (tpsdf["Average Phase Current (A)"] - tf2["Current-L1 (A)"]).abs(),
+            )
+            .max(axis=0)
+            / tpsdf["Average Line Voltage (V)"]
+        )
+        * 100,
+        2,
+    )
+    return tpsdf
+
+
+tpsdf = pd.concat([table_df, tpsdf], axis=1)
+tpsdf = tpsdf.dropna()
+print(irdf)
+
+
+tpsdf["Current Result"] = np.where(tpsdf["Current Unbalance %"] <= 10, "PASS", "FAIL")
+tpsdf["Voltage-NE (V)"] = tpsdf["Voltage-NE (V)"]
+tpsdf["NEV Result"] = np.where(tpsdf["Voltage-NE (V)"] <= 2, "PASS", "FAIL")
+tpsdf["Zero Sum Current (mA)"] = tpsdf["Zero Sum Current (mA)"]
+tpsdf["ZeroSum Result"] = np.where(
+    tpsdf["Zero Sum Current (mA)"] <= (tpsdf["Rated Phase Current (A)"] / 5000 * 1000),
+    "PASS",
+    "FAIL",
+)
+tpsdf = pd.concat([table_df, tpsdf], axis=1)
+tpsdf = tpsdf.dropna()
+print(tpsdf)
+
+import io
+import matplotlib.pyplot as plt
+
+=======
+>>>>>>> c2d63a100a85db2781c470605211401fcdac716c
 # def threephase_combined_graph(tpsdf):
 #     # Create a 2x2 grid of subplots
 #     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(16, 8))
@@ -1632,10 +1980,23 @@ def pat_combined_graph(bf):
 #     return graph_combined
 
 
-
-
 # -----------------------------------------------------Function and operations----------------------------
 
+<<<<<<< HEAD
+
+def func_ops_result(func_check, inter_check):
+    if func_check == "OK" and inter_check == "OK":
+        return "Pass"
+    elif func_check == "OK" and inter_check == "Not OK":
+        return "Fail"
+    elif func_check == "Not OK " and inter_check == "OK":
+        return "Fail"
+    elif func_check == "Not OK" and inter_check == "OK":
+        return "Fail"
+    else:
+        return "Invalid"
+=======
+>>>>>>> c2d63a100a85db2781c470605211401fcdac716c
 
 
 
@@ -1701,7 +2062,7 @@ def main():
         f"{current_time}\n"
         "This Report is the Intellectual Property of M/s Efficienergi Consulting Pvt. Ltd. Plagiarism in Part or Full will be considered as theft of Intellectual property. The Information in this Report is to be treated as Confidential."
     )
-    
+
     for run in footer_paragraph.runs:
         run.font.name = "Calibri"
         run.font.size = Pt(7)
@@ -1713,13 +2074,13 @@ def main():
 
     # FWR
     doc.add_heading("Floor wall Resistance test", 0)
-    doc = pass_table(fwrdf, doc)
+    doc = pass1_table(fwrdf, fwrdf_column_widths, doc)
     graph_combined = flooresistance_combined_graph(fwrdf)
     doc.add_picture(graph_combined, width=Inches(8), height=Inches(4))
 
     # RC
     doc.add_heading("Resistance conductor test", 0)
-    doc = pass_table(rcdf, doc)
+    doc = pass1_table(rcdf, rcdf_column_widths, doc)
     graph_combined = resc_combined_graph(rcdf)
     doc.add_picture(graph_combined, width=Inches(8), height=Inches(4))
 
