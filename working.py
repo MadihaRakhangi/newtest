@@ -248,6 +248,8 @@ fodf["Functional Check"] = F["func_check"]
 fodf["Interlock check"] = F["inter_check"]
 
 
+#--------------pat--------------- 
+
 patdf = pd.DataFrame()  # PAT
 patdf["Device ID"] = F["pat_device_id"]
 patdf["Device Name"] = F["pat_dev_name"]
@@ -261,6 +263,64 @@ patdf["Polarity Test"] = F["pat_pt"]
 patdf["Leakage (mA)"] = F["pat_leak"]
 patdf["Functional Check"] = F["pat_func_check"]
 patdf["Overall Result"] = F["result_pat"]
+
+#--------------eli-cb--------------- 
+elicb = pd.DataFrame() 
+elicb["Earthing Configuration"]= F["earth_config"]
+elicb["device_make"] = F["elicb_device_make"]
+elicb["device_type"]= F["elicb_device_type"]
+elicb["device_sensitivity"]= F["device_sen"]
+elicb["Device Rating (A)"]= F["elicb_device_rating"]
+# TMS - TDS	eli_tms          not there
+elicb["Type of Circuit Location"]=F["type_cir_loc"]
+elicb["No.of Phases"]=F["no_phases"]
+elicb["Trip Curve"]=F["b_curve_type"]
+elicb["V_LN (V)"]=F["elicb_mvln"]
+elicb["V_NE (V)"]=F["elicb_mvne"]
+elicb["L1-ELI (O)"]=F["elicb_mel1"]
+elicb["L2-ELI (O)"]=F["elicb_mel2"]
+elicb["L3-ELI (O)"]=F["elicb_mel3"]
+elicb["Psc (kA)"]=F["elicb_psc"]
+elicb["Suggested Max ELI (O)"]=F["	elicb_max_eli"]
+elicb_filled = elicb.fillna("")
+elicb["Device Rating (A)"] = elicb["Device Rating (A)"].astype(int)
+new_column1 = []
+result_column1 = []
+P = 0
+K = 0
+TMS = 1
+TDS = 1
+
+gf1 = elicb[
+    [
+        "Location",
+        "Parent Location",
+        "Facility Area",
+        "Earthing Configuration",
+        "Type of Circuit Location",
+        "Device Rating (A)",
+        "Device Make",
+        "Device Type",
+        "Device Sensitivity (mA)",
+        "No. of Phases",
+        "Trip Curve",
+    ]
+]
+
+gf2 = elicb[
+    [
+        "Device Rating (A)",
+        "Device Type",
+        "No. of Phases",
+        "V_LN",
+        "V_LE",
+        "V_NE",
+        "L1-ELI",
+        "L2-ELI",
+        "L3-ELI",
+        "Psc (kA)",
+    ]
+]
 
 
 # --------------------------------------------location coloumn------------------
@@ -581,6 +641,152 @@ rdcdf["Result"] = rdcdf.apply(
 rdcdf = pd.concat([table_df, rdcdf], axis=1)
 rdcdf = rdcdf.dropna()
 print(rdcdf)
+
+def Earth_result(elec_dis_ratio, meri):
+    if meri <= 2 and elec_dis_ratio >= 1:
+        return "PASS - Test Electrodes are properly placed"
+    elif meri <= 2 and elec_dis_ratio < 1:
+        return "PASS - Test Electrodes are not properly placed"
+    elif meri > 2 and elec_dis_ratio >= 1:
+        return "FAIL - Test Electrodes are properly placed"
+    elif meri > 2 and elec_dis_ratio < 1:
+        return "FAIL - Test Electrodes are not properly placed"
+    else:
+        return "Invalid"
+
+
+def earthpit_result(elec_dis_ratio, meri):  # earth residual test condition
+    if meri <= 2 and elec_dis_ratio >= 1:
+        return "PASS"
+    elif meri <= 2 and elec_dis_ratio < 1:
+        return "PASS"
+    elif meri > 2 and elec_dis_ratio >= 1:
+        return "FAIL"
+    elif meri > 2 and elec_dis_ratio < 1:
+        return "FAIL"
+    else:
+        return "Invalid"
+
+
+def earth_remark_result(elec_dis_ratio, meri):  # earth residual test condition
+    if meri <= 2 and elec_dis_ratio >= 1:
+        return "Test Electrodes are properly placed"
+    elif meri <= 2 and elec_dis_ratio < 1:
+        return "Test Electrodes are not properly placed"
+    elif meri > 2 and elec_dis_ratio >= 1:
+        return "Test Electrodes are properly placed"
+    elif meri > 2 and elec_dis_ratio < 1:
+        return "Test Electrodes are not properly placed"
+    else:
+        return "Invalid"
+
+
+epedf["Result"] = epedf.apply(
+    lambda row: earthpit_result(
+        row["Electrode Distance Ratio"], row["Measured Earth Resistance - Individual (O)"]
+    ),
+    axis=1,
+)
+epedf["Remark"] = epedf.apply(
+    lambda row: earth_remark_result(
+        row["Electrode Distance Ratio"], row["Measured Earth Resistance - Individual (O)"]
+    ),
+    axis=1,
+)
+epedf = pd.concat([table_df, epedf], axis=1)
+epedf = epedf.dropna()
+print(epedf)
+
+
+def threephase_result(tpsdf, tf2):
+    tpsdf["Rated Line Voltage (V)"] = tf2["Rated Line Voltage (V)"]
+    tpsdf["Average Line Voltage (V)"] = round(
+        (tf2["Voltage-L1L2 (V)"] + tf2["Voltage-L2L3 (V)"] + tf2["Voltage-L3L1 (V)"]) / 3, 2
+    )
+
+    tpsdf["Average Phase Voltage (V)"] = (
+        tf2["Voltage-L1N (V)"] + tf2["Voltage-L2N (V)"] + tf2["Voltage-L3N (V)"]
+    ) / 3
+    tpsdf["Voltage Unbalance %"] = round(
+        (
+            (tf2["Voltage-L1N (V)"] - tpsdf["Average Line Voltage (V)"])
+            .abs()
+            .where(
+                (tf2["Voltage-L1N (V)"] - tpsdf["Average Line Voltage (V)"]) > 0,
+                (tpsdf["Average Line Voltage (V)"] - tf2["Voltage-L1N (V)"]).abs(),
+            )
+            .max(axis=0)
+            / tpsdf["Average Line Voltage (V)"]
+        )
+        * 100,
+        2,
+    )
+    tpsdf["Voltage Result"] = np.where(tpsdf["Voltage Unbalance %"] <= 10, "Pass", "Fail")
+    tpsdf["Rated Phase Current (A)"] = tf2["Rated Phase Current (A)"]
+    tpsdf["Average Phase Current (A)"] = round(
+        (tf2["Current-L1 (A)"] + tf2["Current-L2 (A)"] + tf2["Current-L3 (A)"]) / 3, 2
+    )
+    tpsdf["Current Unbalance %"] = round(
+        (
+            (tf2["Current-L1 (A)"] - tpsdf["Average Phase Current (A)"])
+            .abs()
+            .where(
+                (tf2["Current-L1 (A)"] - tpsdf["Average Phase Current (A)"]) > 0,
+                (tpsdf["Average Phase Current (A)"] - tf2["Current-L1 (A)"]).abs(),
+            )
+            .max(axis=0)
+            / tpsdf["Average Line Voltage (V)"]
+        )
+        * 100,
+        2,
+    )
+    return tpsdf
+
+tpsdf = pd.concat([table_df, tpsdf], axis=1)
+tpsdf= tpsdf.dropna()
+print(irdf)
+
+
+tpsdf["Current Result"] = np.where(tpsdf["Current Unbalance %"] <= 10, "PASS", "FAIL")
+tpsdf["Voltage-NE (V)"] = tpsdf["Voltage-NE (V)"]
+tpsdf["NEV Result"] = np.where(tpsdf["Voltage-NE (V)"] <= 2, "PASS", "FAIL")
+tpsdf["Zero Sum Current (mA)"] = tpsdf["Zero Sum Current (mA)"]
+tpsdf["ZeroSum Result"] = np.where(
+    tpsdf["Zero Sum Current (mA)"] <= (tpsdf["Rated Phase Current (A)"] / 5000 * 1000),
+    "PASS",
+    "FAIL",
+)
+tpsdf = pd.concat([table_df, tpsdf], axis=1)
+tpsdf = tpsdf.dropna()
+print(tpsdf)
+
+
+def func_ops_result(func_check, inter_check):
+    if func_check == "OK" and inter_check == "OK":
+        return "Pass"
+    elif func_check == "OK" and inter_check == "Not OK":
+        return "Fail"
+    elif func_check == "Not OK " and inter_check == "OK":
+        return "Fail"
+    elif func_check == "Not OK" and inter_check == "OK":
+        return "Fail"
+    else:
+        return "Invalid"
+
+
+# Apply the func_ops_result function to create the new 'result' column
+fodf["Result"] = fodf.apply(
+    lambda row: func_ops_result(row["Functional Check"], row["Interlock check"]), axis=1
+)
+fodf = pd.concat([table_df, fodf], axis=1)
+fodf = fodf.dropna()
+print(fodf)
+
+
+patdf = pd.concat([table_df, patdf], axis=1)
+patdf = patdf.dropna()
+print(patdf)
+
 
 
 # ------------------------------------table---------------------------------------
@@ -928,7 +1134,38 @@ def earthpit_table(df, doc):  # creates the earthpit table with  result coloumn
     return doc
 
 
+<<<<<<< HEAD
 # ----------------------------------------------------Insulation resistance-----------------------
+=======
+# -------------------------coloumn-----------------------
+
+irdf_column_widths = [
+    0.52,
+    0.43,
+    0.6,
+    0.37,
+    0.59,
+    0.59,
+    0.69,
+    0.49,
+    0.59,
+    0.59,
+    0.47,
+    0.51,
+    0.59,
+    0.59,
+    0.6,
+]
+
+
+
+# ---------------------------------------combined graphs and piechart-----------------------
+
+
+
+
+
+>>>>>>> c2d63a100a85db2781c470605211401fcdac716c
 def insulation_combined_graph(mf):
     plt.figure(figsize=(16, 8))
 
@@ -976,9 +1213,12 @@ def insulation_combined_graph(mf):
     return graph_combined
 
 
+<<<<<<< HEAD
 # ------------------------------------Floor wall resistance------------------------------
 
 
+=======
+>>>>>>> c2d63a100a85db2781c470605211401fcdac716c
 def flooresistance_combined_graph(df):
     plt.figure(figsize=(16, 8))
 
@@ -1023,10 +1263,13 @@ def flooresistance_combined_graph(df):
 
     return graph_combined1
 
+<<<<<<< HEAD
 
 # -----------------------------------------------------Resistance conductor----------------------------
 
 
+=======
+>>>>>>> c2d63a100a85db2781c470605211401fcdac716c
 def resc_combined_graph(jf):
     plt.figure(figsize=(16, 8))
 
@@ -1068,9 +1311,6 @@ def resc_combined_graph(jf):
     plt.close()
 
     return graph_combined
-
-
-# ------------------------------------Phase Sequence------------------------------
 
 
 def phase_combined_graph(pf):
@@ -1115,10 +1355,6 @@ def phase_combined_graph(pf):
 
     return graph_combined
 
-
-# -----------------------------------------------------Voltage drop----------------------------
-
-
 def voltage_combined_graph(vf):
     plt.figure(figsize=(16, 8))
 
@@ -1161,9 +1397,12 @@ def voltage_combined_graph(vf):
     return graph_combined
 
 
+<<<<<<< HEAD
 # -----------------------------------------------------Polarity----------------------------
 
 
+=======
+>>>>>>> c2d63a100a85db2781c470605211401fcdac716c
 def polarity_combined_graph(af):
     plt.figure(figsize=(16, 8))
 
@@ -1207,6 +1446,7 @@ def polarity_combined_graph(af):
 
     return graph_combined4
 
+<<<<<<< HEAD
 
 # -----------------------------------------------------Residual current device----------------------------
 
@@ -1277,6 +1517,8 @@ rdcdf = rdcdf.dropna()
 print(rdcdf)
 
 
+=======
+>>>>>>> c2d63a100a85db2781c470605211401fcdac716c
 def residual_combined_graph(rf):
     plt.figure(figsize=(16, 8))
 
@@ -1319,6 +1561,7 @@ def residual_combined_graph(rf):
     return graph_combined
 
 
+<<<<<<< HEAD
 # -----------------------------------------------------Earth pit----------------------------
 
 
@@ -1378,6 +1621,8 @@ epedf = epedf.dropna()
 print(epedf)
 
 
+=======
+>>>>>>> c2d63a100a85db2781c470605211401fcdac716c
 def Earth_combined_graph(ef):
     plt.figure(figsize=(16, 8))
 
@@ -1421,7 +1666,150 @@ def Earth_combined_graph(ef):
     return graph_combined
 
 
+def func_ops_combined_graph(of):
+    plt.figure(figsize=(16, 8))
+
+    # bar graph
+    plt.subplot(121)
+    tct = of["Functional Check"].value_counts()
+    tct1 = of["Interlock check"].value_counts()
+
+    X = tct.index
+    Ygirls = tct.values
+    Zboys = tct1.values
+
+    X_axis = np.arange(len(X))
+
+    plt.bar(X_axis - 0.2, Ygirls, 0.4, label="ok")
+    plt.bar(X_axis + 0.2, Zboys, 0.4, label="notok")
+
+    plt.xticks(X_axis, X)
+    plt.xlabel("Groups")
+    plt.ylabel("Number of Students")
+    plt.title("Number of Students in each group")
+    plt.legend()
+
+    # Pie chart
+    plt.subplot(122)
+    of_counts = of["Result"].value_counts()
+    labels = of_counts.index.tolist()
+    values = of_counts.values.tolist()
+    colors = ["#00FF00", "#FF0000"]
+    plt.pie(values, labels=labels, autopct="%1.1f%%", startangle=90, colors=colors)
+    plt.axis("equal")
+    plt.title("Test Results")
+    # Save the combined graph as bytes
+    graph_combined = io.BytesIO()
+    plt.savefig(graph_combined)
+    plt.close()
+
+    return graph_combined
+
+
+
+def pat_combined_graph(bf):
+    plt.figure(figsize=(16, 8))
+
+    # Bar graph
+    plt.subplot(121)
+    combined_data = pd.concat(
+        [bf["Functional Check"], bf["Visual Inspection"]], keys=["col1", "col2"]
+    )
+    tct = combined_data.value_counts()
+    x_values = tct.index
+    y_values = tct.values
+    colors = ["#b967ff", "#e0a899"]
+    bars = plt.bar(x_values, y_values, color=colors)
+    plt.xlabel("functional and inspection check")
+    plt.ylabel("Count")
+    plt.title("Residual Test Results")
+
+    # Add text labels inside each bar
+    for bar, value in zip(bars, y_values):
+        height = bar.get_height()
+        plt.text(
+            bar.get_x() + bar.get_width() / 2,
+            height / 2,
+            f"{value}",  # Show the count of 'col1' inside the bar
+            ha="center",
+            va="center",
+            color="black",
+            fontsize=8,
+            rotation=0,
+        )
+
+    # Pie chart
+    plt.subplot(122)
+    result_counts = bf["Overall Result"].value_counts()
+    labels = result_counts.index
+    values = result_counts.values
+    colors = ["#00FF00", "#FF0000"]
+    plt.pie(values, labels=labels, autopct="%1.1f%%", shadow=False, startangle=90, colors=colors)
+    plt.title("Residual Test Results")
+    plt.axis("equal")  # Equal aspect ratio ensures that the pie is drawn as a circle
+    graph_combined = io.BytesIO()
+    plt.savefig(graph_combined)
+    plt.close()
+
+    return graph_combined
+
+
+
+# ------------------------------------Floor wall resistance------------------------------
+
+
+
+
+
+
+
+# -----------------------------------------------------Resistance conductor----------------------------
+
+
+
+
+
+
+
+
+
+
+
+# ------------------------------------Phase Sequence------------------------------
+
+
+
+
+
+# -----------------------------------------------------Voltage drop----------------------------
+
+
+
+
+
+
+# -----------------------------------------------------Polarity----------------------------
+
+
+
+
+
+# -----------------------------------------------------Residual current device----------------------------
+
+
+
+
+# -----------------------------------------------------Earth pit----------------------------
+
+
+
+
+
+
+
+
 # -----------------------------------------------------Three phase symmetry----------------------------
+<<<<<<< HEAD
 
 
 def threephase_result(tpsdf, tf2):
@@ -1490,6 +1878,8 @@ print(tpsdf)
 import io
 import matplotlib.pyplot as plt
 
+=======
+>>>>>>> c2d63a100a85db2781c470605211401fcdac716c
 # def threephase_combined_graph(tpsdf):
 #     # Create a 2x2 grid of subplots
 #     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(16, 8))
@@ -1580,6 +1970,7 @@ import matplotlib.pyplot as plt
 
 # -----------------------------------------------------Function and operations----------------------------
 
+<<<<<<< HEAD
 
 def func_ops_result(func_check, inter_check):
     if func_check == "OK" and inter_check == "OK":
@@ -1592,55 +1983,10 @@ def func_ops_result(func_check, inter_check):
         return "Fail"
     else:
         return "Invalid"
+=======
+>>>>>>> c2d63a100a85db2781c470605211401fcdac716c
 
 
-# Apply the func_ops_result function to create the new 'result' column
-fodf["Result"] = fodf.apply(
-    lambda row: func_ops_result(row["Functional Check"], row["Interlock check"]), axis=1
-)
-fodf = pd.concat([table_df, fodf], axis=1)
-fodf = fodf.dropna()
-print(fodf)
-
-
-def func_ops_combined_graph(of):
-    plt.figure(figsize=(16, 8))
-
-    # bar graph
-    plt.subplot(121)
-    tct = of["Functional Check"].value_counts()
-    tct1 = of["Interlock check"].value_counts()
-
-    X = tct.index
-    Ygirls = tct.values
-    Zboys = tct1.values
-
-    X_axis = np.arange(len(X))
-
-    plt.bar(X_axis - 0.2, Ygirls, 0.4, label="ok")
-    plt.bar(X_axis + 0.2, Zboys, 0.4, label="notok")
-
-    plt.xticks(X_axis, X)
-    plt.xlabel("Groups")
-    plt.ylabel("Number of Students")
-    plt.title("Number of Students in each group")
-    plt.legend()
-
-    # Pie chart
-    plt.subplot(122)
-    of_counts = of["Result"].value_counts()
-    labels = of_counts.index.tolist()
-    values = of_counts.values.tolist()
-    colors = ["#00FF00", "#FF0000"]
-    plt.pie(values, labels=labels, autopct="%1.1f%%", startangle=90, colors=colors)
-    plt.axis("equal")
-    plt.title("Test Results")
-    # Save the combined graph as bytes
-    graph_combined = io.BytesIO()
-    plt.savefig(graph_combined)
-    plt.close()
-
-    return graph_combined
 
 
 # -----------------------------------------------------ELI circuit breaker----------------------------
@@ -1651,57 +1997,6 @@ def func_ops_combined_graph(of):
 
 # -----------------------------------------------------PAT----------------------------
 
-
-patdf = pd.concat([table_df, patdf], axis=1)
-patdf = patdf.dropna()
-print(patdf)
-
-
-def pat_combined_graph(bf):
-    plt.figure(figsize=(16, 8))
-
-    # Bar graph
-    plt.subplot(121)
-    combined_data = pd.concat(
-        [bf["Functional Check"], bf["Visual Inspection"]], keys=["col1", "col2"]
-    )
-    tct = combined_data.value_counts()
-    x_values = tct.index
-    y_values = tct.values
-    colors = ["#b967ff", "#e0a899"]
-    bars = plt.bar(x_values, y_values, color=colors)
-    plt.xlabel("functional and inspection check")
-    plt.ylabel("Count")
-    plt.title("Residual Test Results")
-
-    # Add text labels inside each bar
-    for bar, value in zip(bars, y_values):
-        height = bar.get_height()
-        plt.text(
-            bar.get_x() + bar.get_width() / 2,
-            height / 2,
-            f"{value}",  # Show the count of 'col1' inside the bar
-            ha="center",
-            va="center",
-            color="black",
-            fontsize=8,
-            rotation=0,
-        )
-
-    # Pie chart
-    plt.subplot(122)
-    result_counts = bf["Overall Result"].value_counts()
-    labels = result_counts.index
-    values = result_counts.values
-    colors = ["#00FF00", "#FF0000"]
-    plt.pie(values, labels=labels, autopct="%1.1f%%", shadow=False, startangle=90, colors=colors)
-    plt.title("Residual Test Results")
-    plt.axis("equal")  # Equal aspect ratio ensures that the pie is drawn as a circle
-    graph_combined = io.BytesIO()
-    plt.savefig(graph_combined)
-    plt.close()
-
-    return graph_combined
 
 
 # -----------------------------------------------------MAIN----------------------------
